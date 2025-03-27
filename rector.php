@@ -28,6 +28,7 @@ return static function (RectorConfig $rectorConfig): void {
         __DIR__ . '/admin-login.php',
         __DIR__ . '/includes/config.php',
         __DIR__ . '/src/Validators/IpValidator.php',
+        __DIR__ . '/src/Validators/EmailValidator.php',
     ]);
 
     // Configurer les règles spécifiques
