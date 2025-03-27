@@ -23,7 +23,7 @@ jobs:
         composer install --no-interaction --prefer-dist --no-progress
         
     - name: Run PHPStan
-      run: vendor/bin/phpstan analyse
+      run: vendor/bin/phpstan analyse --no-progress
         
     - name: Run PHP CS Fixer
       run: vendor/bin/php-cs-fixer fix --dry-run --diff
@@ -42,11 +42,16 @@ jobs:
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_ROOT_PASSWORD: ''
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
           MYSQL_DATABASE: notes_esigelec
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+          --name=mysql
         
     steps:
     - uses: actions/checkout@v2
@@ -59,6 +64,12 @@ jobs:
         
     - name: Install Composer
       run: composer install --no-interaction --prefer-dist --no-progress
+      
+    - name: Wait for MySQL
+      run: |
+        while ! mysqladmin ping -h127.0.0.1 --silent; do
+          sleep 1
+        done
         
     - name: Run PHPUnit
       run: vendor/bin/phpunit
