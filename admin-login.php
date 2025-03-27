@@ -7,11 +7,15 @@
    }
    if(isset($_POST['login']))
    {
-	   $uname=$_POST['username'];
-	   $password=md5($_POST['password']);
-	   
-		$sql ="SELECT UserName,Password, is_admin FROM users WHERE UserName='$uname' and Password='$password'";
-		$result = $dbh1->query($sql);
+	   $uname = $_POST['username'];
+      $password = md5($_POST['password']);
+
+      // Utilisation de requêtes préparées pour éviter l'injection SQL
+      $sql = "SELECT UserName, Password, is_admin FROM users WHERE UserName = ? AND Password = ?";
+      $stmt = $dbh1->prepare($sql);
+      $stmt->bind_param("ss", $uname, $password);
+      $stmt->execute();
+      $result = $stmt->get_result();
 
 		if ($result->num_rows > 0) {
 				while($row = $result->fetch_array()) {
