@@ -9,86 +9,52 @@ if (!isset($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
-// Déconnexion si déjà connecté
-if (isset($_SESSION['alogin']) && $_SESSION['alogin'] !== '') {
-    $_SESSION['alogin'] = '';
-}
-
-// Traitement du formulaire de connexion
-if (isset($_POST['login'])) {
-    // Récupération et filtrage des entrées
-    $uname = isset($_POST['username']) ? trim($_POST['username']) : '';
-    $password = isset($_POST['password']) ? $_POST['password'] : '';
+// Traitement du formulaire d'inscription
+if (isset($_POST['register'])) {
+    $username = trim($_POST['nom_utilisateur'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
+    $password_verif = $_POST['password_verif'] ?? '';
     $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
     
-    // Vérifier le nombre de tentatives par IP dans les 30 dernières minutes
-    $sql = "SELECT COUNT(*) as attempts FROM login_attempts 
-            WHERE ip_address = ? AND attempt_time > DATE_SUB(NOW(), INTERVAL 30 MINUTE)";
-    $stmt = $dbh->prepare($sql);
-    $stmt->execute([$ip]);
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    if (isset($result['attempts']) && $result['attempts'] >= 5) {
-        $error_message = "Trop de tentatives de connexion. Veuillez réessayer dans 30 minutes.";
+    // Validation des champs
+    if (empty($username) || empty($email) || empty($password) || empty($password_verif)) {
+        $error_message = "Tous les champs sont obligatoires.";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error_message = "Format d'email invalide.";
+    } elseif ($password !== $password_verif) {
+        $error_message = "Les mots de passe ne correspondent pas.";
+    } elseif (strlen($password) < 8) {
+        $error_message = "Le mot de passe doit contenir au moins 8 caractères.";
     } else {
-        // Utilisation de requêtes préparées pour éviter l'injection SQL
-        $sql = "SELECT UserName, Password, is_admin FROM users WHERE UserName = ?";
+        // Vérifier si l'utilisateur ou l'email existent déjà
+        $sql = "SELECT COUNT(*) FROM users WHERE NameUser = ? OR UserName = ?";
         $stmt = $dbh->prepare($sql);
-        $stmt->execute([$uname]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($row) {
-            $stored_password = $row['Password'];  // Récupérer le mot de passe haché stocké
-
-            // Vérification du mot de passe avec password_verify
-            if (password_verify($password, $stored_password)) {
-                // Mot de passe correct
-                $_SESSION['alogin'] = htmlspecialchars($row['UserName']);
-                $_SESSION['is_admin'] = (int)$row['is_admin'];
-                
-                // Supprimer les tentatives précédentes de cette IP en cas de succès
-                $sql = "DELETE FROM login_attempts WHERE ip_address = ?";
-                $stmt = $dbh->prepare($sql);
-                $stmt->execute([$ip]);
-                
+        $stmt->execute([$username, $email]);
+        $exists = $stmt->fetchColumn();
+        
+        if ($exists) {
+            $error_message = "Nom d'utilisateur ou email déjà utilisé.";
+        } else {
+            // Hachage du mot de passe
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+            
+            // Insérer l'utilisateur dans la base de données
+            $sql = "INSERT INTO users (NameUser, UserName, Password) VALUES (?, ?, ?)";
+            $stmt = $dbh->prepare($sql);
+            if ($stmt->execute([$username, $email, $hashed_password])) {
+                $success_message = "Inscription réussie ! Vous pouvez maintenant vous connecter.";
                 // Redirection sécurisée
-                header('Location: dashboard.php');
+                header('Location: admin-login.php');
                 exit();
             } else {
-                // Mot de passe incorrect - Enregistrer la tentative
-                $sql = "INSERT INTO login_attempts (username, ip_address) VALUES (?, ?)";
-                $stmt = $dbh->prepare($sql);
-                $stmt->execute([$uname, $ip]);
-                
-                // Obtenir le nombre de tentatives restantes pour cette IP
-                $sql = "SELECT COUNT(*) as attempts FROM login_attempts 
-                        WHERE ip_address = ? AND attempt_time > DATE_SUB(NOW(), INTERVAL 30 MINUTE)";
-                $stmt = $dbh->prepare($sql);
-                $stmt->execute([$ip]);
-                $result = $stmt->fetch(PDO::FETCH_ASSOC);
-                
-                $attempts_left = isset($result['attempts']) ? (5 - $result['attempts']) : 5;
-                $error_message = "Identifiants incorrects. Tentatives restantes : " . $attempts_left;
+                $error_message = "Une erreur est survenue lors de l'inscription.";
             }
-        } else {
-            // Utilisateur non trouvé - Enregistrer la tentative
-            $sql = "INSERT INTO login_attempts (username, ip_address) VALUES (?, ?)";
-            $stmt = $dbh->prepare($sql);
-            $stmt->execute([$uname, $ip]);
-            
-            // Obtenir le nombre de tentatives restantes pour cette IP
-            $sql = "SELECT COUNT(*) as attempts FROM login_attempts 
-                    WHERE ip_address = ? AND attempt_time > DATE_SUB(NOW(), INTERVAL 30 MINUTE)";
-            $stmt = $dbh->prepare($sql);
-            $stmt->execute([$ip]);
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            
-            $attempts_left = isset($result['attempts']) ? (5 - $result['attempts']) : 5;
-            $error_message = "Identifiants incorrects. Tentatives restantes : " . $attempts_left;
         }
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="fr">
@@ -137,7 +103,7 @@ if (isset($_POST['login'])) {
                                           <a href="#">
                                           <img style="height: 70px" src="assets/images/footer-logo.png" alt="Logo"></a>
                                           <br>
-                                          <h3 style="color: white;"> <strong>Login</strong></h3>
+                                          <h3 style="color: white;"> <strong>S'inscrire</strong></h3>
                                        </div>
                                     </div>
                                     <?php if (isset($error_message)): ?>
@@ -146,15 +112,23 @@ if (isset($_POST['login'])) {
                                     <div class="panel-body p-20">
                                        <form class="admin-login" method="post">
                                           <div class="form-group">
-                                             <label for="inputEmail3" class="control-label">Email</label>
-                                             <input type="text" name="username" class="form-control" id="inputEmail3" placeholder="Email" required>
+                                             <label for="nom_utilisateur" class="control-label">Nom d'utilisateur</label>
+                                             <input type="text" name="nom_utilisateur" class="form-control" id="nom_utilisateur" placeholder="Nom d'utilisateur" required>
+                                          </div>
+                                          <div class="form-group">
+                                             <label for="email" class="control-label">Email</label>
+                                             <input type="text" name="email" class="form-control" id="email" placeholder="Email" required>
                                           </div>
                                           <div class="form-group">
                                              <label for="inputPassword3" class="control-label">Mot de passe</label>
                                              <input type="password" name="password" class="form-control" id="inputPassword3" placeholder="Mot de passe" required>
+                                          </div>
+                                          <div class="form-group">
+                                             <label for="password_verif" class="control-label">Confirmer le mot de passe</label>
+                                             <input type="password" name="password_verif" class="form-control" id="password_verif" placeholder="Mot de passe" required>
                                           </div><br>
                                           <div class="form-group mt-20">
-                                             <button type="submit" name="login" class="btn login-btn">Se Connecter</button>
+                                             <button type="submit" name="register" class="btn login-btn">S'inscrire</button>
                                           </div>
                                           <div class="col-sm-6">
                                              <a href="index.php" class="text-white">Retour à l'accueil</a>
