@@ -11,7 +11,8 @@
         "phpunit/phpunit": "^10.0",
         "phpstan/phpstan": "^1.10",
         "friendsofphp/php-cs-fixer": "^3.14",
-        "phpmd/phpmd": "^2.13"
+        "phpmd/phpmd": "^2.13",
+        "rector/rector": "^0.19.0"
     },
     "autoload": {
         "psr-4": {
@@ -28,11 +29,15 @@
         "analyse": "phpstan analyse",
         "cs-check": "php-cs-fixer fix --dry-run --diff",
         "cs-fix": "php-cs-fixer fix",
-        "security-check": "local-php-security-checker"
+        "security-check": "local-php-security-checker",
+        "install-security-checker": "curl -sSL https://github.com/fabpot/local-php-security-checker/releases/download/v2.0.6/local-php-security-checker_2.0.6_linux_amd64 -o local-php-security-checker && chmod +x local-php-security-checker"
     },
     "config": {
         "platform": {
             "php": "8.2"
+        },
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
         }
     }
 } 

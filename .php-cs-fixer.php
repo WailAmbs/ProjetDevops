@@ -11,7 +11,6 @@ return (new PhpCsFixer\Config())
         'array_syntax' => ['syntax' => 'short'],
         'ordered_imports' => ['sort_algorithm' => 'alpha'],
         'no_unused_imports' => true,
-        'declare_strict_types' => true,
         'strict_param' => true,
         'no_superfluous_phpdoc_tags' => true,
         'phpdoc_trim' => true,
@@ -31,11 +30,12 @@ return (new PhpCsFixer\Config())
         'phpdoc_no_alias_tag' => true,
         'phpdoc_trim_consecutive_blank_line_separation' => true,
         'phpdoc_order' => true,
-        'phpdoc_order_by_value' => true,
         'phpdoc_var_annotation_correct_order' => true,
         'phpdoc_no_empty_return' => true,
         'phpdoc_add_missing_param_annotation' => true,
         'phpdoc_return_self_reference' => true,
         'phpdoc_align' => true,
     ])
+    ->setUsingCache(true)
+    ->setRiskyAllowed(true)
     ->setFinder($finder); 

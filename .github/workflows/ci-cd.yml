@@ -23,19 +23,21 @@ jobs:
         composer install --no-interaction --prefer-dist --no-progress
         
     - name: Run PHPStan
-      run: vendor/bin/phpstan analyse || true
+      run: vendor/bin/phpstan analyse --no-progress
         
     - name: Run PHP CS Fixer
-      run: vendor/bin/php-cs-fixer fix --dry-run --diff || true
+      run: vendor/bin/php-cs-fixer fix --dry-run --diff
         
     - name: Run PHP Security Checker
       run: |
-        curl -sSL https://github.com/fabpot/local-php-security-checker/releases/download/v2.0.6/local-php-security-checker_2.0.6_linux_amd64 -o local-php-security-checker
-        chmod +x local-php-security-checker
-        ./local-php-security-checker || true
+        composer run-script install-security-checker
+        ./local-php-security-checker
         
     - name: Run PHP Mess Detector
-      run: vendor/bin/phpmd . xml phpmd.xml --reportfile phpmd-report.xml || true
+      run: vendor/bin/phpmd . xml phpmd.xml --reportfile phpmd-report.xml
+      
+    - name: Run Rector (Code Quality)
+      run: vendor/bin/rector process --dry-run
 
   test:
     runs-on: ubuntu-latest
@@ -92,7 +94,6 @@ jobs:
 
       - name: Run Codacy Analysis CLI
         uses: codacy/codacy-analysis-cli-action@master
-        continue-on-error: true
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           verbose: true
@@ -103,7 +104,6 @@ jobs:
 
       - name: Upload SARIF results file
         uses: github/codeql-action/upload-sarif@main
-        continue-on-error: true
         with:
           sarif_file: results.sarif
 
