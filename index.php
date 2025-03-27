@@ -36,6 +36,9 @@ include('includes/config.php');
                   <a class="nav-link" href="find-result.php">Etudiant</a>
                 </li>
                 <li class="nav-item">
+                  <a class="nav-link" href="register.php">S'inscrire</a>
+                </li>
+                <li class="nav-item">
                   <a class="nav-link"  href="admin-login.php">Admin</a>
                 </li>
               </ul>
