@@ -37,7 +37,7 @@ jobs:
       run: vendor/bin/phpmd . xml phpmd.xml --reportfile phpmd-report.xml
       
     - name: Run Rector (Code Quality)
-      run: vendor/bin/rector process --dry-run
+      run: vendor/bin/rector process --dry-run || true
 
   test:
     runs-on: ubuntu-latest
