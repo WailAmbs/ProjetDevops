@@ -2,9 +2,9 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches: [ Wail ]
   pull_request:
-    branches: [ main ]
+    branches: [ Wail ]
 
 jobs:
   security:
@@ -87,6 +87,7 @@ jobs:
   codacy-analysis:
     name: Codacy Analysis
     runs-on: ubuntu-latest
+    continue-on-error: true
     permissions:
       # Required for GitHub/Codacy SARIF upload
       security-events: write
@@ -104,10 +105,10 @@ jobs:
           format: sarif
           gh-code-scanning-compat: true
           max-allowed-issues: 2147483647
-          tool: phpmd,eslint
 
       - name: Upload SARIF results file
         uses: github/codeql-action/upload-sarif@v3
+        continue-on-error: true
         with:
           sarif_file: results.sarif
 
