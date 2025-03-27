@@ -2,16 +2,41 @@
    session_start();
    error_reporting(1);
    include('includes/config.php');
+   
+   // Génération du token CSRF
+   if (empty($_SESSION['csrf_token'])) {
+       $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+   }
+   
    if($_SESSION['alogin']!=''){
 		$_SESSION['alogin']='';
    }
    if(isset($_POST['login']))
    {
+<<<<<<< Updated upstream
 	   $uname=$_POST['username'];
 	   $password=md5($_POST['password']);
 	   
 		$sql ="SELECT UserName,Password, is_admin FROM users WHERE UserName='$uname' and Password='$password'";
 		$result = $dbh1->query($sql);
+=======
+      // Vérification du token CSRF
+      if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+          $_SESSION['msgErreur'] = "Erreur de sécurité. Veuillez réessayer.";
+          header('Location: admin-login.php');
+          exit();
+      }
+      
+	   $uname = $_POST['username'];
+      $password = md5($_POST['password']);
+
+      // Utilisation de requêtes préparées pour éviter l'injection SQL
+      $sql = "SELECT UserName, Password, is_admin FROM users WHERE UserName = ? AND Password = ?";
+      $stmt = $dbh1->prepare($sql);
+      $stmt->bind_param("ss", $uname, $password);
+      $stmt->execute();
+      $result = $stmt->get_result();
+>>>>>>> Stashed changes
 
 		if ($result->num_rows > 0) {
 				while($row = $result->fetch_array()) {
@@ -90,6 +115,7 @@
 									<?php } ?>
                                     <div class="panel-body p-20">
                                        <form class="admin-login" method="post">
+                                          <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                                           <div class="form-group">
                                              <label for="inputEmail3" class="control-label">Identifiant</label>
                                              <input type="text" name="username" class="form-control" id="inputEmail3" placeholder="Identifiant">
