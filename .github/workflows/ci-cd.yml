@@ -15,11 +15,12 @@ jobs:
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.1'
+        php-version: '8.2'
         extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql
         
     - name: Install Composer
-      run: composer install --no-interaction --prefer-dist --no-progress
+      run: |
+        composer install --no-interaction --prefer-dist --no-progress
         
     - name: Run PHPStan
       run: vendor/bin/phpstan analyse
@@ -28,7 +29,9 @@ jobs:
       run: vendor/bin/php-cs-fixer fix --dry-run --diff
         
     - name: Run PHP Security Checker
-      run: composer require sensiolabs/security-checker && vendor/bin/security-checker security:check composer.lock
+      run: |
+        composer require sensiolabs/security-checker --dev --no-interaction
+        vendor/bin/security-checker security:check composer.lock
         
     - name: Run PHP Mess Detector
       run: vendor/bin/phpmd . text cleancode,codesize,controversial,design,naming,unusedcode
@@ -51,7 +54,7 @@ jobs:
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.1'
+        php-version: '8.2'
         extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql
         
     - name: Install Composer

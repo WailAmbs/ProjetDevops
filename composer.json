@@ -3,7 +3,7 @@
     "description": "Système de gestion des notes ESIGELEC",
     "type": "project",
     "require": {
-        "php": "^8.1",
+        "php": "^8.2",
         "ext-pdo": "*",
         "ext-mbstring": "*"
     },
@@ -30,5 +30,10 @@
         "cs-check": "php-cs-fixer fix --dry-run --diff",
         "cs-fix": "php-cs-fixer fix",
         "security-check": "security-checker security:check composer.lock"
+    },
+    "config": {
+        "platform": {
+            "php": "8.2"
+        }
     }
 } 
