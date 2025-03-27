@@ -6,7 +6,4 @@
 composer.lock
 .idea/
 .vscode/
-*.log
-/node_modules/
-/coverage/
-/.phpunit.cache/ 
+*.log 

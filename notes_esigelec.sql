@@ -198,6 +198,7 @@ INSERT INTO `tblsubjects` (`id`, `SubjectName`, `SubjectCode`, `Creationdate`, `
 
 CREATE TABLE `users` (
   `id` int(11) NOT NULL,
+  `NameUser` varchar(55) DEFAULT NULL,
   `UserName` varchar(100) DEFAULT NULL,
   `Password` varchar(100) DEFAULT NULL,
   `is_admin` tinyint(1) NOT NULL,
