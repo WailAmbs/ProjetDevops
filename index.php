@@ -87,7 +87,6 @@ if($query->rowCount() > 0)
 {
 foreach($results as $result)
 {   ?>                      
-<li><a href="notice-details.php?nid=<?php echo htmlentities($result->id);?>" target="_blank" class="text-dark"><?php echo htmlentities($result->noticeTitle);?></li>
 <?php }} ?>
 
                    </ul>
