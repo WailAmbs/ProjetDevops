@@ -2,6 +2,14 @@
 session_start();
 error_reporting(0);
 include('includes/config.php');
+
+// Vérification du token CSRF
+if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+    $_SESSION['msgErreur'] = "Erreur de sécurité. Veuillez réessayer.";
+    header('Location: find-result.php');
+    exit();
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">

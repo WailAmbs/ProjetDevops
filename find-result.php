@@ -1,7 +1,13 @@
 <?php
 session_start();
 //error_reporting(0);
-include('includes/config.php');?>
+include('includes/config.php');
+
+// Génération du token CSRF
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -45,6 +51,7 @@ include('includes/config.php');?>
                            
 
                                 <form action="result.php" method="post" class="admin-login">
+                                    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                                 	<div class="form-group">
                                 		<label for="rollid" class="control-label">Entrez votre numéro</label>
                                         <input type="text" class="form-control" id="rollid" placeholder="Entrez votre numéro" autocomplete="off" name="rollid">
