@@ -2,9 +2,9 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ Wail ]
+    branches: [ main ]
   pull_request:
-    branches: [ Wail ]
+    branches: [ main ]
 
 jobs:
   security:
