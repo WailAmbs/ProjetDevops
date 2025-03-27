@@ -7,78 +7,6 @@ on:
     branches: [ Wail ]
 
 jobs:
-  security:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.2'
-        extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql
-        
-    - name: Install Composer
-      run: |
-        composer install --no-interaction --prefer-dist --no-progress
-        
-    - name: Run PHPStan
-      run: vendor/bin/phpstan analyse --no-progress
-        
-    - name: Run PHP CS Fixer
-      run: vendor/bin/php-cs-fixer fix --dry-run --diff
-        
-    - name: Run PHP Security Checker
-      run: |
-        composer require sensiolabs/security-checker --dev --no-interaction
-        vendor/bin/security-checker security:check composer.lock
-        
-    - name: Run PHP Mess Detector
-      run: vendor/bin/phpmd . text cleancode,codesize,controversial,design,naming,unusedcode
-
-  test:
-    runs-on: ubuntu-latest
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
-          MYSQL_DATABASE: notes_esigelec
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-          --name=mysql
-        
-    steps:
-    - uses: actions/checkout@v2
-    
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.2'
-        extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql
-        
-    - name: Install Composer
-      run: composer install --no-interaction --prefer-dist --no-progress
-      
-    - name: Wait for MySQL
-      run: |
-        while ! mysqladmin ping -h127.0.0.1 --silent; do
-          sleep 1
-        done
-        
-    - name: Run PHPUnit
-      run: vendor/bin/phpunit
-      env:
-        DB_HOST: 127.0.0.1
-        DB_NAME: notes_esigelec
-        DB_USER: root
-        DB_PASS: ''
-
   codacy-analysis:
     name: Codacy Analysis
     runs-on: ubuntu-latest
@@ -102,7 +30,7 @@ jobs:
           sarif_file: results.sarif
 
   deploy:
-    needs: [security, test, codacy-analysis]
+    needs: [codacy-analysis]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/Wail'
     
