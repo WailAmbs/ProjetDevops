@@ -35,7 +35,7 @@ jobs:
         ./local-php-security-checker || true
         
     - name: Run PHP Mess Detector
-      run: vendor/bin/phpmd . text cleancode,codesize,controversial,design,naming,unusedcode || true
+      run: vendor/bin/phpmd . xml phpmd.xml --reportfile phpmd-report.xml || true
 
   test:
     runs-on: ubuntu-latest
