@@ -9,6 +9,19 @@ if (!isset($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
+// Fonction pour vérifier si le domaine email est valide
+function is_valid_email_domain($email) {
+    $domain = substr(strrchr($email, "@"), 1);
+    return checkdnsrr($domain, "MX");
+}
+
+function is_invalid_email($email) {
+   return strpos($email, '*') !== false;
+}
+
+// Liste noire des domaines jetables
+$disposable_domains = ['yopmail.com', 'mailinator.com', 'tempmail.com', '10minutemail.com', 'guerrillamail.com'];
+
 // Traitement du formulaire d'inscription
 if (isset($_POST['register'])) {
     $username = trim($_POST['nom_utilisateur'] ?? '');
@@ -16,12 +29,18 @@ if (isset($_POST['register'])) {
     $password = $_POST['password'] ?? '';
     $password_verif = $_POST['password_verif'] ?? '';
     $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
-    
+
     // Validation des champs
     if (empty($username) || empty($email) || empty($password) || empty($password_verif)) {
         $error_message = "Tous les champs sont obligatoires.";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error_message = "Format d'email invalide.";
+    } elseif (is_invalid_email($email)) {
+      $error_message = "L'email contient des caractères invalides.";
+    } elseif (!is_valid_email_domain($email)) {
+        $error_message = "Le domaine de l'email n'est pas valide.";
+    } elseif (in_array(substr(strrchr($email, "@"), 1), $disposable_domains)) {
+        $error_message = "Les emails jetables ne sont pas autorisés.";
     } elseif ($password !== $password_verif) {
         $error_message = "Les mots de passe ne correspondent pas.";
     } elseif (strlen($password) < 8) {
@@ -32,13 +51,13 @@ if (isset($_POST['register'])) {
         $stmt = $dbh->prepare($sql);
         $stmt->execute([$username, $email]);
         $exists = $stmt->fetchColumn();
-        
+
         if ($exists) {
             $error_message = "Nom d'utilisateur ou email déjà utilisé.";
         } else {
             // Hachage du mot de passe
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            
+
             // Insérer l'utilisateur dans la base de données
             $sql = "INSERT INTO users (NameUser, UserName, Password) VALUES (?, ?, ?)";
             $stmt = $dbh->prepare($sql);
@@ -54,6 +73,7 @@ if (isset($_POST['register'])) {
     }
 }
 ?>
+
 
 
 <!DOCTYPE html>
