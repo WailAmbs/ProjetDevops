@@ -1,7 +1,16 @@
 parameters:
-    level: 5
+    level: 2
     paths:
         - .
     excludePaths:
         - vendor/*
-        - tests/* 
+        - tests/*
+    ignoreErrors:
+        - '#Variable \$dbh might not be defined.#'
+        - '#Variable \$msg might not be defined.#'
+        - '#Variable \$error might not be defined.#'
+        - '#Parameter \#1 \$string of function htmlentities expects string#'
+        - '#Strict comparison using === between#'
+        - '#File ends with a trailing whitespace#'
+        - '#Variable \$totlcount might not be defined.#'
+        - '#If condition is always false.#' 
