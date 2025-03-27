@@ -3,25 +3,27 @@
    error_reporting(1);
    include('includes/config.php');
    
-   // Génération du token CSRF
-   if (empty($_SESSION['csrf_token'])) {
-       $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-   }
-   
    if($_SESSION['alogin']!=''){
 		$_SESSION['alogin']='';
    }
    if(isset($_POST['login']))
    {
-      // Vérification du token CSRF
-      if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
-          $_SESSION['msgErreur'] = "Erreur de sécurité. Veuillez réessayer.";
+      $uname = $_POST['username'];
+      $password = $_POST['password'];
+      $ip = $_SERVER['REMOTE_ADDR'];
+      
+      // Vérifier le nombre de tentatives par IP dans les 30 dernières minutes
+      $sql = "SELECT COUNT(*) as attempts FROM login_attempts 
+              WHERE ip_address = ? AND attempt_time > DATE_SUB(NOW(), INTERVAL 30 MINUTE)";
+      $stmt = $dbh->prepare($sql);
+      $stmt->execute([$ip]);
+      $result = $stmt->fetch(PDO::FETCH_ASSOC);
+      
+      if ($result['attempts'] >= 5) {
+          $_SESSION['msgErreur'] = "Trop de tentatives de connexion. Veuillez réessayer dans 30 minutes.";
           header('Location: admin-login.php');
           exit();
       }
-      
-      $uname = $_POST['username'];
-      $password = $_POST['password'];  // Pas besoin de hasher ici, tu vas comparer avec le hash stocké
 
       // Utilisation de requêtes préparées pour éviter l'injection SQL
       $sql = "SELECT UserName, Password, is_admin FROM users WHERE UserName = ?";
@@ -31,21 +33,50 @@
       $result = $stmt->get_result();
 
       if ($result->num_rows > 0) {
-         $row = $result->fetch_array();
-         $stored_password = $row['Password'];  // Récupérer le mot de passe haché stocké
+          $row = $result->fetch_array();
+          $stored_password = $row['Password'];  // Récupérer le mot de passe haché stocké
 
-         // Vérification du mot de passe avec password_verify
-         if (password_verify($password, $stored_password)) {
-            // Mot de passe correct
-            $_SESSION['alogin'] = $row['UserName'];
-            $_SESSION['is_admin'] = $row['is_admin'];
-            header('Location: dashboard.php');
-         } else {
-            // Mot de passe incorrect
-            $_SESSION['msgErreur'] = "Mauvais identifiant / mot de passe.";
-         }
+          // Vérification du mot de passe avec password_verify
+          if (password_verify($password, $stored_password)) {
+             // Mot de passe correct
+             $_SESSION['alogin'] = $row['UserName'];
+             $_SESSION['is_admin'] = $row['is_admin'];
+             
+             // Supprimer les tentatives précédentes de cette IP en cas de succès
+             $sql = "DELETE FROM login_attempts WHERE ip_address = ?";
+             $stmt = $dbh->prepare($sql);
+             $stmt->execute([$ip]);
+             
+             header('Location: dashboard.php');
+          } else {
+             // Mot de passe incorrect - Enregistrer la tentative
+             $sql = "INSERT INTO login_attempts (username, ip_address) VALUES (?, ?)";
+             $stmt = $dbh->prepare($sql);
+             $stmt->execute([$uname, $ip]);
+             
+             // Obtenir le nombre de tentatives restantes pour cette IP
+             $sql = "SELECT COUNT(*) as attempts FROM login_attempts 
+                     WHERE ip_address = ? AND attempt_time > DATE_SUB(NOW(), INTERVAL 30 MINUTE)";
+             $stmt = $dbh->prepare($sql);
+             $stmt->execute([$ip]);
+             $result = $stmt->fetch(PDO::FETCH_ASSOC);
+             
+             $_SESSION['msgErreur'] = "Mauvais identifiant / mot de passe. Tentatives restantes : " . (5 - $result['attempts']);
+          }
       } else {
-         $_SESSION['msgErreur'] = "Mauvais identifiant / mot de passe.";
+          // Utilisateur non trouvé - Enregistrer la tentative
+          $sql = "INSERT INTO login_attempts (username, ip_address) VALUES (?, ?)";
+          $stmt = $dbh->prepare($sql);
+          $stmt->execute([$uname, $ip]);
+          
+          // Obtenir le nombre de tentatives restantes pour cette IP
+          $sql = "SELECT COUNT(*) as attempts FROM login_attempts 
+                  WHERE ip_address = ? AND attempt_time > DATE_SUB(NOW(), INTERVAL 30 MINUTE)";
+          $stmt = $dbh->prepare($sql);
+          $stmt->execute([$ip]);
+          $result = $stmt->fetch(PDO::FETCH_ASSOC);
+          
+          $_SESSION['msgErreur'] = "Mauvais identifiant / mot de passe. Tentatives restantes : " . (5 - $result['attempts']);
       }
    }
 ?>

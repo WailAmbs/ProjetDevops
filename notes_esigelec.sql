@@ -117,6 +117,15 @@ CREATE TABLE `tblstudents` (
   `Status` int(1) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+
+
+--
+-- Creation login attempts`
+--
+
+CREATE TABLE IF NOT EXISTS login_attempts (id INT AUTO_INCREMENT PRIMARY KEY, username VARCHAR(255) NOT NULL, attempt_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, ip_address VARCHAR(45) NOT NULL);
+
+
 --
 -- Déchargement des données de la table `tblstudents`
 --
