@@ -20,31 +20,36 @@
           exit();
       }
       
-	   $uname = $_POST['username'];
-      $password = md5($_POST['password']);
+      $uname = $_POST['username'];
+      $password = $_POST['password'];  // Pas besoin de hasher ici, tu vas comparer avec le hash stocké
 
       // Utilisation de requêtes préparées pour éviter l'injection SQL
-      $sql = "SELECT UserName, Password, is_admin FROM users WHERE UserName = ? AND Password = ?";
+      $sql = "SELECT UserName, Password, is_admin FROM users WHERE UserName = ?";
       $stmt = $dbh1->prepare($sql);
-      $stmt->bind_param("ss", $uname, $password);
+      $stmt->bind_param("s", $uname);
       $stmt->execute();
       $result = $stmt->get_result();
 
-		if ($result->num_rows > 0) {
-				while($row = $result->fetch_array()) {
-				 $_SESSION['alogin']=$row[0];
-				 $_SESSION['is_admin']=$row[2];
-				}
-				header('Location: dashboard.php');
-		}
-	   else{
-		   $_SESSION['msgErreur'] = "Mauvais identifiant / mot de passe.";
-	   
-	   }
-   
+      if ($result->num_rows > 0) {
+         $row = $result->fetch_array();
+         $stored_password = $row['Password'];  // Récupérer le mot de passe haché stocké
+
+         // Vérification du mot de passe avec password_verify
+         if (password_verify($password, $stored_password)) {
+            // Mot de passe correct
+            $_SESSION['alogin'] = $row['UserName'];
+            $_SESSION['is_admin'] = $row['is_admin'];
+            header('Location: dashboard.php');
+         } else {
+            // Mot de passe incorrect
+            $_SESSION['msgErreur'] = "Mauvais identifiant / mot de passe.";
+         }
+      } else {
+         $_SESSION['msgErreur'] = "Mauvais identifiant / mot de passe.";
+      }
    }
-   
-   ?>
+?>
+
 <!DOCTYPE html>
 <html lang="en">
    <head>
