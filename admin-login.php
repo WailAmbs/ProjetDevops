@@ -13,13 +13,6 @@
    }
    if(isset($_POST['login']))
    {
-<<<<<<< Updated upstream
-	   $uname=$_POST['username'];
-	   $password=md5($_POST['password']);
-	   
-		$sql ="SELECT UserName,Password, is_admin FROM users WHERE UserName='$uname' and Password='$password'";
-		$result = $dbh1->query($sql);
-=======
       // Vérification du token CSRF
       if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
           $_SESSION['msgErreur'] = "Erreur de sécurité. Veuillez réessayer.";
@@ -36,7 +29,6 @@
       $stmt->bind_param("ss", $uname, $password);
       $stmt->execute();
       $result = $stmt->get_result();
->>>>>>> Stashed changes
 
 		if ($result->num_rows > 0) {
 				while($row = $result->fetch_array()) {
