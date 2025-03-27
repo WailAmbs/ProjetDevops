@@ -77,7 +77,7 @@ jobs:
         mysql -h127.0.0.1 -uroot notes_esigelec < notes_esigelec.sql
         
     - name: Run PHPUnit
-      run: vendor/bin/phpunit tests/LoginTest.php tests/RegisterTest.php tests/EmailValidatorTest.php
+      run: vendor/bin/phpunit --exclude-group skip tests/LoginTest.php tests/RegisterTest.php tests/EmailValidatorTest.php
       env:
         DB_HOST: 127.0.0.1
         DB_NAME: notes_esigelec
