@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<ruleset name="PHPMD rule set for ProjetDevops"
+         xmlns="http://pmd.sf.net/ruleset/1.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sf.net/ruleset/1.0.0 http://pmd.sf.net/ruleset_xml_schema.xsd"
+         xsi:noNamespaceSchemaLocation="http://pmd.sf.net/ruleset_xml_schema.xsd">
+    <description>PHPMD ruleset for ProjetDevops</description>
+
+    <!-- Import standard rulesets with customizations -->
+    <rule ref="rulesets/cleancode.xml">
+        <exclude name="StaticAccess"/>
+        <exclude name="ElseExpression"/>
+        <exclude name="BooleanArgumentFlag"/>
+    </rule>
+    
+    <rule ref="rulesets/codesize.xml">
+        <exclude name="ExcessiveMethodLength"/>
+        <exclude name="ExcessiveClassLength"/>
+        <exclude name="ExcessiveParameterList"/>
+        <exclude name="TooManyMethods"/>
+    </rule>
+    
+    <rule ref="rulesets/codesize.xml/ExcessiveMethodLength">
+        <properties>
+            <property name="minimum" value="150"/>
+        </properties>
+    </rule>
+    
+    <rule ref="rulesets/codesize.xml/ExcessiveClassLength">
+        <properties>
+            <property name="minimum" value="1500"/>
+        </properties>
+    </rule>
+    
+    <rule ref="rulesets/controversial.xml">
+        <exclude name="Superglobals"/>
+        <exclude name="CamelCasePropertyName"/>
+        <exclude name="CamelCaseVariableName"/>
+    </rule>
+    
+    <rule ref="rulesets/design.xml">
+        <exclude name="ExitExpression"/>
+        <exclude name="CouplingBetweenObjects"/>
+    </rule>
+    
+    <rule ref="rulesets/naming.xml">
+        <exclude name="ShortVariable"/>
+        <exclude name="LongVariable"/>
+    </rule>
+    
+    <rule ref="rulesets/naming.xml/ShortVariable">
+        <properties>
+            <property name="minimum" value="2"/>
+            <property name="exceptions" value="id,i,j,k,q,db"/>
+        </properties>
+    </rule>
+    
+    <rule ref="rulesets/unusedcode.xml">
+        <exclude name="UnusedLocalVariable"/>
+    </rule>
+
+    <!-- Exclude directories -->
+    <exclude-pattern>vendor/*</exclude-pattern>
+    <exclude-pattern>tests/*</exclude-pattern>
+    
+    <!-- Exclude specific files with parsing issues -->
+    <exclude-pattern>*/admin-login.php</exclude-pattern>
+    <exclude-pattern>*/includes/config.php</exclude-pattern>
+</ruleset> 

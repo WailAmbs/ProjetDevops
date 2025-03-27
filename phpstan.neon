@@ -1,12 +1,22 @@
 parameters:
-    level: 5
+    level: 3
     paths:
         - .
     excludePaths:
         - vendor/*
         - tests/*
+    fileExtensions:
+        - php
+    reportUnmatchedIgnoredErrors: false
+    scanDirectories:
+        - .
+    bootstrapFiles:
+        - includes/config.php
     ignoreErrors:
-        - '#Call to an undefined method [a-zA-Z0-9\\_]+::findOne\(\)#'
-        - '#Call to an undefined method [a-zA-Z0-9\\_]+::find\(\)#'
-        - '#Call to an undefined method [a-zA-Z0-9\\_]+::save\(\)#'
-        - '#Call to an undefined method [a-zA-Z0-9\\_]+::delete\(\)#' 
+        - '#Variable \$dbh might not be defined.#'
+        - '#Variable \$msg might not be defined.#'
+        - '#Variable \$error might not be defined.#'
+        - '#Variable \$totlcount might not be defined.#'
+        - '#Parameter \#1 \$string of function htmlentities expects string#'
+        - '#File ends with a trailing whitespace#'
+        - '#If condition is always false.#' 
